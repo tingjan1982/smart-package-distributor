@@ -54,9 +54,10 @@ class SmartPackageDistributor {
         val optimalBoxCount = if (unsealedPackagedTotal % boxLimit > 0) unsealedPackagedTotal / boxLimit + 1 else unsealedPackagedTotal / boxLimit
 
         // can optimize
-        if (optimalBoxCount < boxes.size) {
+        if (optimalBoxCount < unsealedBoxes.size) {
+            var boxCountToOptimize = unsealedBoxes.size - optimalBoxCount
 
-            // eliiminate boxes that cannot be combined with other boxes
+            // eliminate boxes that cannot be combined with other boxes
             val iter = unsealedBoxes.iterator()
             iter.forEach { box ->
                 val candidateForBoxMerge = unsealedBoxes.filter { b -> b != box }
@@ -68,18 +69,23 @@ class SmartPackageDistributor {
                 }
             }
 
+            println("Eligible to merge boxes: $unsealedBoxes")
             val listIterator = unsealedBoxes.listIterator()
 
-            listIterator.forEach { b ->
+            while (boxCountToOptimize > 0) {
+                listIterator.forEach { unsealedBox ->
+                    while(listIterator.hasNext()) {
+                        val boxToMerge = listIterator.next()
 
+                        if (unsealedBox.mergePackageBox(boxToMerge)) {
+                            listIterator.remove()
+                            boxes.remove(boxToMerge)
+                            boxCountToOptimize -= 1
+                        }
+                    }
+                }
             }
         }
-
-        println("Eligible to merge boxes: $unsealedBoxes")
-
-
-
-
     }
 
     fun verifyPackage(): Boolean {
@@ -122,7 +128,7 @@ fun main(args: Array<String>) {
             .addOrder(NamedOrder("Sky", beef = 6))
             .addOrder(NamedOrder("Stoney", beef = 5))
             .addOrder(NamedOrder("YP", pork = 5))
-l
+
     println("Total orders - beef: ${smartPackageDistributor.totalBeef()}, pork: ${smartPackageDistributor.totalPork()}")
 
     smartPackageDistributor.computePacking()

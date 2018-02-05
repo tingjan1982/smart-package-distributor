@@ -62,6 +62,19 @@ class PackagedBox {
         sealed = true
     }
 
+    fun mergePackageBox(boxToMerge : PackagedBox) : Boolean {
+
+        if (currentTotal + boxToMerge.packageTotal() <= boxLimit) {
+            boxToMerge.namedOrders.forEach { namedOrder ->
+                addOrder(namedOrder)
+            }
+
+            return true
+        }
+
+        return false
+    }
+
     fun isSealed(): Boolean {
         return sealed
     }
