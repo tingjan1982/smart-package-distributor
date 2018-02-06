@@ -21,6 +21,7 @@ class PackagedBox {
         }
 
         namedOrders.add(namedOrder)
+        namedOrder.assignPackagedBox(this)
         currentTotal += namedOrder.total()
 
         if (currentTotal == boxLimit) {
@@ -50,6 +51,8 @@ class PackagedBox {
             porkCount -= pork
 
             val chunkedOrder = NamedOrder(namedOrder.name, beef = beef, pork = pork)
+            namedOrder.linkOrder(chunkedOrder)
+
             val packagedBox = PackagedBox()
             packagedBox.addOrder(chunkedOrder)
             chunkedBoxes.add(packagedBox)

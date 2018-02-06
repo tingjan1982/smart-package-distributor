@@ -5,11 +5,14 @@ class SmartPackageDistributor {
 
     private val boxLimit = 25
 
-    val orders: MutableList<NamedOrder> = mutableListOf()
+    private val orders: MutableList<NamedOrder> = mutableListOf()
 
-    val boxes: MutableList<PackagedBox> = mutableListOf()
+    private val boxes: MutableList<PackagedBox> = mutableListOf()
 
 
+    /**
+     * Adds order to this class fluently.
+     */
     fun addOrder(order: NamedOrder): SmartPackageDistributor {
         orders.add(order)
         return this
@@ -56,6 +59,7 @@ class SmartPackageDistributor {
         // can optimize
         if (optimalBoxCount < unsealedBoxes.size) {
             var boxCountToOptimize = unsealedBoxes.size - optimalBoxCount
+            println("Optimization opportunity discovered, attempting to optimize $boxCountToOptimize boxes.")
 
             // eliminate boxes that cannot be combined with other boxes
             val iter = unsealedBoxes.iterator()
@@ -74,7 +78,7 @@ class SmartPackageDistributor {
 
             while (boxCountToOptimize > 0) {
                 listIterator.forEach { unsealedBox ->
-                    while(listIterator.hasNext()) {
+                    while (listIterator.hasNext()) {
                         val boxToMerge = listIterator.next()
 
                         if (unsealedBox.mergePackageBox(boxToMerge)) {
@@ -86,6 +90,53 @@ class SmartPackageDistributor {
                 }
             }
         }
+    }
+
+    fun showDispatchInstructions() {
+
+        val allocatedBoxes = mutableMapOf<PackagedBox, PackagedBox>()
+        val deliveries = mutableListOf<Delivery>()
+        var delivery = Delivery()
+        deliveries.add(delivery)
+
+        boxes.forEach { box ->
+            val linkedPackageBoxes = box.namedOrders
+                    .filter { it.linkedMasterOrder != null }
+                    .flatMap {  it.linkedMasterOrder!!.linkedOrders }
+                    .map { o -> o.linkedPackagedBox }
+                    .filter { b -> !allocatedBoxes.containsKey(b) }
+                    .toMutableSet()
+
+            if (!allocatedBoxes.containsKey(box)) {
+                linkedPackageBoxes.add(box)
+            }
+
+            delivery.addPackagedBoxes(linkedPackageBoxes)
+            linkedPackageBoxes.forEach {
+                allocatedBoxes[it] = it
+            }
+
+            if (delivery.deliverySealed) {
+                delivery = Delivery()
+                deliveries.add(delivery)
+            }
+        }
+
+        if (deliveries.filter { !it.deliverySealed }.count() > 0 && deliveries.filter { it.isDeliveryExceededLimit() }.count() > 0) {
+            // opportunity to optimize delivery
+
+            
+        }
+
+
+        println("Number of created deliveries: ${deliveries.size}")
+
+        deliveries.forEach {
+            println("Delivery - package count: ${it.boxesToDeliver.size}")
+
+            it.boxesToDeliver.forEach { println(it) }
+        }
+
     }
 
     fun verifyPackage(): Boolean {
@@ -134,4 +185,6 @@ fun main(args: Array<String>) {
     smartPackageDistributor.computePacking()
     val verified = smartPackageDistributor.verifyPackage()
     println("Package verification result: $verified")
+
+    smartPackageDistributor.showDispatchInstructions()
 }
