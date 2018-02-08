@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-group = "com.digitalriver"
+group = "io.eion"
 version = "1.0-SNAPSHOT"
 
 buildscript {

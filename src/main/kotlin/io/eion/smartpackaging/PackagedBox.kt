@@ -2,7 +2,9 @@ package io.eion.smartpackaging
 
 class PackagedBox {
 
-    private val boxLimit = 25
+    companion object {
+        const val boxLimit = 30
+    }
 
     val namedOrders: MutableList<NamedOrder> = mutableListOf()
 
