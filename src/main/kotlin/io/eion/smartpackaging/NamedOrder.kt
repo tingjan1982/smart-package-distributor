@@ -1,4 +1,4 @@
-package com.digitalriver
+package io.eion.smartpackaging
 
 data class NamedOrder(val name: String, val beef: Int = 0, val pork: Int = 0) {
 

@@ -1,4 +1,4 @@
-package com.digitalriver
+package io.eion.smartpackaging
 
 
 class SmartPackageDistributor {
@@ -18,7 +18,7 @@ class SmartPackageDistributor {
         return this
     }
 
-    fun computePacking() {
+    fun computeBoxPackaging() {
 
         val copiedOrders = orders.toMutableList()
         println("Current orders: $copiedOrders")
@@ -91,7 +91,7 @@ class SmartPackageDistributor {
         }
     }
 
-    fun showDispatchInstructions() {
+    fun computeDeliveries() {
 
         val deliveries = mutableListOf<Delivery>()
         var delivery = Delivery()
@@ -134,7 +134,7 @@ class SmartPackageDistributor {
 
     }
 
-    fun verifyPackage(): Boolean {
+    fun verifyPackages(): Boolean {
 
         val totalPackagedCount = boxes.flatMap { box -> box.namedOrders }
                 .map { order -> order.total() }
@@ -177,9 +177,9 @@ fun main(args: Array<String>) {
 
     println("Total orders - beef: ${smartPackageDistributor.totalBeef()}, pork: ${smartPackageDistributor.totalPork()}")
 
-    smartPackageDistributor.computePacking()
-    val verified = smartPackageDistributor.verifyPackage()
+    smartPackageDistributor.computeBoxPackaging()
+    val verified = smartPackageDistributor.verifyPackages()
     println("Package verification result: $verified")
 
-    smartPackageDistributor.showDispatchInstructions()
+    smartPackageDistributor.computeDeliveries()
 }

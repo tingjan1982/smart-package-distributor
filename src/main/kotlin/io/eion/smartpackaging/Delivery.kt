@@ -1,4 +1,4 @@
-package com.digitalriver
+package io.eion.smartpackaging
 
 class Delivery {
 
