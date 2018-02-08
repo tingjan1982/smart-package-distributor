@@ -3,12 +3,28 @@ package io.eion.smartpackaging
 
 class SmartPackageDistributor {
 
-    private val boxLimit = 25
+    private val boxLimit = PackagedBox.boxLimit
 
     private val orders: MutableList<NamedOrder> = mutableListOf()
 
     private val boxes: MutableList<PackagedBox> = mutableListOf()
 
+
+    fun addAndFulfillOrders(orders: List<NamedOrder>) {
+
+        this.addOrders(orders)
+        this.fulfillOrders()
+    }
+
+    fun fulfillOrders() {
+        println("Total orders - beef: ${this.totalBeef()}, pork: ${this.totalPork()}")
+
+        this.computeBoxPackaging()
+        val verified = this.verifyPackages()
+        println("Package verification result: $verified")
+
+        this.computeDeliveries()
+    }
 
     /**
      * Adds order to this class fluently.
@@ -18,7 +34,12 @@ class SmartPackageDistributor {
         return this
     }
 
-    fun computeBoxPackaging() {
+    private fun addOrders(orders: List<NamedOrder>): SmartPackageDistributor {
+        this.orders.addAll(orders)
+        return this
+    }
+
+    private fun computeBoxPackaging() {
 
         val copiedOrders = orders.toMutableList()
         println("Current orders: $copiedOrders")
@@ -91,7 +112,7 @@ class SmartPackageDistributor {
         }
     }
 
-    fun computeDeliveries() {
+    private fun computeDeliveries() {
 
         val deliveries = mutableListOf<Delivery>()
         var delivery = Delivery()
@@ -109,7 +130,7 @@ class SmartPackageDistributor {
                     }
                 }
 
-        boxes.filter { it.boxBundle == null}
+        boxes.filter { it.boxBundle == null }
                 .forEach {
                     delivery.addPackagedBox(it)
 
@@ -155,10 +176,27 @@ class SmartPackageDistributor {
     }
 }
 
+
+val order1 = listOf(
+        NamedOrder("Anita", beef = 5),
+        NamedOrder("Cliff", 5, 6),
+        NamedOrder("Daniel", beef = 10),
+        NamedOrder("Edison", 5, 5),
+        NamedOrder("Felix", 6, 6),
+        NamedOrder("Jane", beef = 10),
+        NamedOrder("Otis", beef = 5),
+        NamedOrder("Olga", beef = 6),
+        NamedOrder("Ayi", beef = 2),
+        NamedOrder("Uncle", beef = 6)
+)
+
 fun main(args: Array<String>) {
 
-    val smartPackageDistributor = SmartPackageDistributor()
-    smartPackageDistributor.addOrder(NamedOrder("Cherry", 6, 3))
+    val yearEndOrder = SmartPackageDistributor()
+    yearEndOrder.addAndFulfillOrders(order1)
+
+    val previousOrder = SmartPackageDistributor()
+    previousOrder.addOrder(NamedOrder("Cherry", 6, 3))
             .addOrder(NamedOrder("Anke", beef = 4))
             .addOrder(NamedOrder("Afra", beef = 4))
             .addOrder(NamedOrder("Chavez", beef = 6))
@@ -174,12 +212,6 @@ fun main(args: Array<String>) {
             .addOrder(NamedOrder("Sky", beef = 6))
             .addOrder(NamedOrder("Stoney", beef = 5))
             .addOrder(NamedOrder("YP", pork = 5))
+    previousOrder.fulfillOrders()
 
-    println("Total orders - beef: ${smartPackageDistributor.totalBeef()}, pork: ${smartPackageDistributor.totalPork()}")
-
-    smartPackageDistributor.computeBoxPackaging()
-    val verified = smartPackageDistributor.verifyPackages()
-    println("Package verification result: $verified")
-
-    smartPackageDistributor.computeDeliveries()
 }
