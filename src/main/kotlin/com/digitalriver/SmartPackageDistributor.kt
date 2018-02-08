@@ -27,7 +27,6 @@ class SmartPackageDistributor {
         boxes.add(box)
 
         for (copiedOrder in copiedOrders) {
-
             try {
                 val chunkedBoxes = box.addOrder(copiedOrder)
 
@@ -94,40 +93,36 @@ class SmartPackageDistributor {
 
     fun showDispatchInstructions() {
 
-        val allocatedBoxes = mutableMapOf<PackagedBox, PackagedBox>()
         val deliveries = mutableListOf<Delivery>()
         var delivery = Delivery()
         deliveries.add(delivery)
 
-        boxes.forEach { box ->
-            val linkedPackageBoxes = box.namedOrders
-                    .filter { it.linkedMasterOrder != null }
-                    .flatMap {  it.linkedMasterOrder!!.linkedOrders }
-                    .map { o -> o.linkedPackagedBox }
-                    .filter { b -> !allocatedBoxes.containsKey(b) }
-                    .toMutableSet()
+        // handle box bundles first
+        boxes.filter { it.boxBundle != null }
+                .map { it.boxBundle!!.packagedBoxes }
+                .forEach {
+                    delivery.addPackagedBoxes(it)
 
-            if (!allocatedBoxes.containsKey(box)) {
-                linkedPackageBoxes.add(box)
-            }
+                    if (delivery.deliverySealed) {
+                        delivery = Delivery()
+                        deliveries.add(delivery)
+                    }
+                }
 
-            delivery.addPackagedBoxes(linkedPackageBoxes)
-            linkedPackageBoxes.forEach {
-                allocatedBoxes[it] = it
-            }
+        boxes.filter { it.boxBundle == null}
+                .forEach {
+                    delivery.addPackagedBox(it)
 
-            if (delivery.deliverySealed) {
-                delivery = Delivery()
-                deliveries.add(delivery)
-            }
-        }
+                    if (delivery.deliverySealed) {
+                        delivery = Delivery()
+                        deliveries.add(delivery)
+                    }
+                }
 
         if (deliveries.filter { !it.deliverySealed }.count() > 0 && deliveries.filter { it.isDeliveryExceededLimit() }.count() > 0) {
             // opportunity to optimize delivery
-
-            
+            println("Need optimization")
         }
-
 
         println("Number of created deliveries: ${deliveries.size}")
 

@@ -10,6 +10,9 @@ class PackagedBox {
 
     private var sealed: Boolean = false
 
+    var boxBundle: BoxBundle? = null
+
+
     fun addOrder(namedOrder: NamedOrder) : List<PackagedBox>? {
 
         if (namedOrder.total() > boxLimit) {
@@ -31,10 +34,10 @@ class PackagedBox {
         return null
     }
 
-    private fun handleLargeOrders(namedOrder: NamedOrder): List<PackagedBox> {
+    private fun handleLargeOrders(mainOrder: NamedOrder): List<PackagedBox> {
 
-        var beefCount = namedOrder.beef
-        var porkCount = namedOrder.pork
+        var beefCount = mainOrder.beef
+        var porkCount = mainOrder.pork
         val chunkedBoxes = mutableListOf<PackagedBox>()
 
         while (beefCount > 0 || porkCount > 0) {
@@ -50,12 +53,20 @@ class PackagedBox {
             beefCount -= beef
             porkCount -= pork
 
-            val chunkedOrder = NamedOrder(namedOrder.name, beef = beef, pork = pork)
-            namedOrder.linkOrder(chunkedOrder)
+            val chunkedOrder = NamedOrder(mainOrder.name, beef = beef, pork = pork)
+            mainOrder.linkOrder(chunkedOrder)
 
             val packagedBox = PackagedBox()
             packagedBox.addOrder(chunkedOrder)
             chunkedBoxes.add(packagedBox)
+        }
+
+        if (chunkedBoxes.isNotEmpty()) {
+            val boxBundle = BoxBundle()
+
+            chunkedBoxes.forEach {
+                boxBundle.bundlePackageBox(it)
+            }
         }
 
         return chunkedBoxes
@@ -70,6 +81,17 @@ class PackagedBox {
         if (currentTotal + boxToMerge.packageTotal() <= boxLimit) {
             boxToMerge.namedOrders.forEach { namedOrder ->
                 addOrder(namedOrder)
+            }
+
+            // if the box to merge contains reference to other boxes
+            if (boxToMerge.boxBundle != null) {
+                if (this.boxBundle == null) {
+                    this.boxBundle = BoxBundle()
+                }
+
+                boxToMerge.boxBundle?.packagedBoxes!!
+                        .filter { it != boxToMerge }
+                        .forEach { this.boxBundle!!.bundlePackageBox(it) }
             }
 
             return true

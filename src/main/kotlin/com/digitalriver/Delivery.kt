@@ -8,12 +8,16 @@ class Delivery {
 
     var deliverySealed: Boolean = false
 
+    fun addPackagedBox(packagedBox : PackagedBox) {
+        this.addPackagedBoxes(listOf(packagedBox))
+    }
+
     fun addPackagedBoxes(packagedBoxes: Collection<PackagedBox>) {
 
         if (!deliverySealed) {
             boxesToDeliver.addAll(packagedBoxes)
 
-            if (boxesToDeliver.size > dailyLimit) {
+            if (boxesToDeliver.size >= dailyLimit) {
                 deliverySealed = true
             }
         }
